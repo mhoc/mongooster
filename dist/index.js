@@ -1,6 +1,10 @@
 "use strict";
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
+__export(require("mongoose"));
 class Collection {
     constructor(collectionName, schema) {
         this.model = mongoose_1.model(collectionName, schema);

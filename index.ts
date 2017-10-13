@@ -6,6 +6,8 @@ import {
   SchemaTypeOpts,
 } from "mongoose";
 
+export * from "mongoose";
+
 export class Collection<T extends Document> {
   private model: Model<T>;
 

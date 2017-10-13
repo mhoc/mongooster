@@ -1,5 +1,6 @@
 /// <reference types="mongoose" />
 import { Document, Schema, SchemaTypeOpts } from "mongoose";
+export * from "mongoose";
 export declare class Collection<T extends Document> {
     private model;
     constructor(collectionName: string, schema: Schema);
