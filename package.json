@@ -1,0 +1,14 @@
+{
+  "name": "mongooster",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "mongoose": "^4.12.1"
+  },
+  "devDependencies": {
+    "@types/mongoose": "^4.7.23",
+    "tslint": "^5.7.0",
+    "typescript": "^2.5.3"
+  }
+}
