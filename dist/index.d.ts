@@ -1,7 +1,7 @@
 /// <reference types="mongoose" />
 import { Document, Schema, SchemaTypeOpts } from "mongoose";
 export * from "mongoose";
-export declare class Middlware<T> {
+export declare class Middleware<T> {
     preInsert?: () => Promise<void>;
     postInsert?: (doc: T) => Promise<void>;
     preUpdate?: () => Promise<void>;
@@ -19,7 +19,7 @@ export declare class Middlware<T> {
 }
 export declare class Collection<T extends Document> {
     private model;
-    constructor(collectionName: string, schema: Schema, middleware?: Middlware<T>);
+    constructor(collectionName: string, schema: Schema, middleware?: Middleware<T>);
     find(query: any): Promise<T[]>;
     findOne(query: any): Promise<T | null>;
     findById(id: string): Promise<T | null>;

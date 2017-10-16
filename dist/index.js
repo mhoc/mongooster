@@ -5,7 +5,7 @@ function __export(m) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 __export(require("mongoose"));
-class Middlware {
+class Middleware {
     constructor(hooks) {
         this.preInsert = hooks.preInsert;
         this.postInsert = hooks.postInsert;
@@ -15,7 +15,7 @@ class Middlware {
         this.postRemove = hooks.postRemove;
     }
 }
-exports.Middlware = Middlware;
+exports.Middleware = Middleware;
 class Collection {
     constructor(collectionName, schema, middleware) {
         if (middleware) {

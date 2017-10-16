@@ -8,7 +8,7 @@ import {
 
 export * from "mongoose";
 
-export class Middlware<T> {
+export class Middleware<T> {
   public preInsert?: () => Promise<void>;
   public postInsert?: (doc: T) => Promise<void>;
   public preUpdate?: () => Promise<void>;
@@ -37,7 +37,7 @@ export class Middlware<T> {
 export class Collection<T extends Document> {
   private model: Model<T>;
 
-  constructor(collectionName: string, schema: Schema, middleware?: Middlware<T>) {
+  constructor(collectionName: string, schema: Schema, middleware?: Middleware<T>) {
     if (middleware) {
       if (middleware.preInsert) {
         schema = schema.pre("save", (next: (err?: Error) => void) => {
