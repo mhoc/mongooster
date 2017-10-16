@@ -8,10 +8,74 @@ import {
 
 export * from "mongoose";
 
+export class Middlware<T> {
+  public preInsert?: () => Promise<void>;
+  public postInsert?: (doc: T) => Promise<void>;
+  public preUpdate?: () => Promise<void>;
+  public postUpdate?: (doc: T) => Promise<void>;
+  public preRemove?: () => Promise<void>;
+  public postRemove?: (doc: T) => Promise<void>;
+
+  constructor(hooks: {
+    preInsert?: () => Promise<void>;
+    postInsert?: (doc: T) => Promise<void>;
+    preUpdate?: () => Promise<void>;
+    postUpdate?: (doc: T) => Promise<void>;
+    preRemove?: () => Promise<void>;
+    postRemove?: (doc: T) => Promise<void>;
+  }) {
+    this.preInsert = hooks.preInsert;
+    this.postInsert = hooks.postInsert;
+    this.preUpdate = hooks.preUpdate;
+    this.postUpdate = hooks.postUpdate;
+    this.preRemove = hooks.preRemove;
+    this.postRemove = hooks.postRemove;
+  }
+
+}
+
 export class Collection<T extends Document> {
   private model: Model<T>;
 
-  constructor(collectionName: string, schema: Schema) {
+  constructor(collectionName: string, schema: Schema, middleware?: Middlware<T>) {
+    if (middleware) {
+      if (middleware.preInsert) {
+        schema = schema.pre("save", (next: (err?: Error) => void) => {
+          if (!middleware.preInsert) throw `preInsert middleware not found for ${collectionName}. this is likely a bug in mongooster`;
+          middleware.preInsert().then(() => next()).catch(next);
+        });
+      }
+      if (middleware.postInsert) {
+        schema = schema.post("save", (doc: T, next: (err?: Error) => void) => {
+          if (!middleware.postInsert) throw `postInsert middleware not found for ${collectionName}. this is likely a bug in mongooster`;
+          middleware.postInsert(doc).then(() => next()).catch(next);
+        });
+      }
+      if (middleware.preUpdate) {
+        schema = schema.pre("update", (next: (err?: Error) => void) => {
+          if (!middleware.preUpdate) throw `preUpdate middleware not found for ${collectionName}. this is likely a bug in mongooster`;
+          middleware.preUpdate().then(() => next()).catch(next);
+        });
+      }
+      if (middleware.postUpdate) {
+        schema = schema.post("update", (doc: T, next: (err?: Error) => void) => {
+          if (!middleware.postUpdate) throw `postUpdate middleware not found for ${collectionName}. this is likely a bug in mongooster`;
+          middleware.postUpdate(doc).then(() => next()).catch(next);
+        });
+      }
+      if (middleware.preRemove) {
+        schema = schema.pre("remove", (next: (err?: Error) => void) => {
+          if (!middleware.preRemove) throw `preRemove middleware not found for ${collectionName}. this is likely a bug in mongooster`;
+          middleware.preRemove().then(() => next()).catch(next);
+        });
+      }
+      if (middleware.postRemove) {
+        schema = schema.post("remove", (doc: T, next: (err?: Error) => void) => {
+          if (!middleware.postRemove) throw `postRemove middleware not found for ${collectionName}. this is likely a bug in mongooster`;
+          middleware.postRemove(doc).then(() => next()).catch(next);
+        });
+      }
+    }
     this.model = model<T>(collectionName, schema);
   }
 
