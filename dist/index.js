@@ -5,6 +5,26 @@ function __export(m) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 __export(require("mongoose"));
+/** This is identical to a mongoose.Schema, except that it automatically adds the
+ *  _id:false option if an _id field is provided on the original schema object.
+ *  This is useful for nesting subschemas which you dont want mongoose auto-adding
+ *  an _id field, but it does mean you have to specify _id as a field on the
+ *  root collection schema.
+ */
+class Schema extends mongoose_1.Schema {
+    constructor(schema) {
+        const opts = {};
+        if (!schema._id) {
+            opts._id = false;
+        }
+        super(schema, opts);
+    }
+}
+exports.Schema = Schema;
+/** Middleware is a class which makes creating middleware a bit more typesafe,
+ *  and allows you to provide functions that return a Promise instead of a
+ *  callback.
+ */
 class Middleware {
     constructor(hooks) {
         this.preInsert = hooks.preInsert;

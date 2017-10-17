@@ -2,13 +2,37 @@ import {
   Document,
   Model,
   model,
-  Schema,
+  Schema as MongooseSchema,
+  SchemaDefinition,
+  SchemaOptions,
   SchemaTypeOpts,
 } from "mongoose";
 
 export * from "mongoose";
 
-export class Middleware<T> {
+/** This is identical to a mongoose.Schema, except that it automatically adds the 
+ *  _id:false option if an _id field is provided on the original schema object. 
+ *  This is useful for nesting subschemas which you dont want mongoose auto-adding 
+ *  an _id field, but it does mean you have to specify _id as a field on the 
+ *  root collection schema.
+ */
+export class Schema extends MongooseSchema {
+
+  constructor(schema: SchemaDefinition) {
+    const opts: SchemaOptions = {};
+    if (!schema._id) {
+      opts._id = false;
+    }
+    super(schema, opts);
+  }
+
+}
+
+/** Middleware is a class which makes creating middleware a bit more typesafe, 
+ *  and allows you to provide functions that return a Promise instead of a 
+ *  callback. 
+ */
+export class Middleware<T extends Document> {
   public preInsert?: () => Promise<void>;
   public postInsert?: (doc: T) => Promise<void>;
   public preUpdate?: () => Promise<void>;
