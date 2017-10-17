@@ -2,6 +2,7 @@ import {
   Document,
   Model,
   model,
+  Query,
   Schema as MongooseSchema,
   SchemaDefinition,
   SchemaOptions,
@@ -28,6 +29,17 @@ export class Schema extends MongooseSchema {
 
 }
 
+/** UpdateOp is a simplified and type-safe form of the object passed as the second
+ *  paramter to a .update() operation.
+ *  It is derived from the value of `this` inside the middleware 
+ *  function, but is abstracted by this library to be a bit easier to use.
+ */
+export interface UpdateOp {
+  $set?: {
+    [fieldPath: string]: any,
+  };
+};
+
 /** Middleware is a class which makes creating middleware a bit more typesafe, 
  *  and allows you to provide functions that return a Promise instead of a 
  *  callback. 
@@ -35,16 +47,16 @@ export class Schema extends MongooseSchema {
 export class Middleware<T extends Document> {
   public preInsert?: () => Promise<void>;
   public postInsert?: (doc: T) => Promise<void>;
-  public preUpdate?: () => Promise<void>;
-  public postUpdate?: (doc: T) => Promise<void>;
+  public preUpdate?: (op: UpdateOp) => Promise<void>;
+  public postUpdate?: (doc: T, op: UpdateOp) => Promise<void>;
   public preRemove?: () => Promise<void>;
   public postRemove?: (doc: T) => Promise<void>;
 
   constructor(hooks: {
     preInsert?: () => Promise<void>;
     postInsert?: (doc: T) => Promise<void>;
-    preUpdate?: () => Promise<void>;
-    postUpdate?: (doc: T) => Promise<void>;
+    preUpdate?: (op: UpdateOp) => Promise<void>;
+    postUpdate?: (doc: T, op: UpdateOp) => Promise<void>;
     preRemove?: () => Promise<void>;
     postRemove?: (doc: T) => Promise<void>;
   }) {
@@ -76,15 +88,23 @@ export class Collection<T extends Document> {
         });
       }
       if (middleware.preUpdate) {
-        schema = schema.pre("update", (next: (err?: Error) => void) => {
+        schema = schema.pre("update", function(this: any, next: (err?: Error) => void) {
           if (!middleware.preUpdate) throw `preUpdate middleware not found for ${collectionName}. this is likely a bug in mongooster`;
-          middleware.preUpdate().then(() => next()).catch(next);
+          const updateOp: UpdateOp = {};
+          if (this._update.$set) {
+            updateOp.$set = this._update.$set;
+          }
+          middleware.preUpdate(updateOp).then(() => next()).catch(next);
         });
       }
       if (middleware.postUpdate) {
-        schema = schema.post("update", (doc: T, next: (err?: Error) => void) => {
+        schema = schema.post("update", function(this: any, doc: T, next: (err?: Error) => void) {
           if (!middleware.postUpdate) throw `postUpdate middleware not found for ${collectionName}. this is likely a bug in mongooster`;
-          middleware.postUpdate(doc).then(() => next()).catch(next);
+          const updateOp: UpdateOp = {};
+          if (this._update.$set) {
+            updateOp.$set = this._update.$set;
+          }
+          middleware.postUpdate(doc, updateOp).then(() => next()).catch(next);
         });
       }
       if (middleware.preRemove) {

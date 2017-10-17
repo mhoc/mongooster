@@ -21,6 +21,7 @@ class Schema extends mongoose_1.Schema {
     }
 }
 exports.Schema = Schema;
+;
 /** Middleware is a class which makes creating middleware a bit more typesafe,
  *  and allows you to provide functions that return a Promise instead of a
  *  callback.
@@ -54,17 +55,25 @@ class Collection {
                 });
             }
             if (middleware.preUpdate) {
-                schema = schema.pre("update", (next) => {
+                schema = schema.pre("update", function (next) {
                     if (!middleware.preUpdate)
                         throw `preUpdate middleware not found for ${collectionName}. this is likely a bug in mongooster`;
-                    middleware.preUpdate().then(() => next()).catch(next);
+                    const updateOp = {};
+                    if (this._update.$set) {
+                        updateOp.$set = this._update.$set;
+                    }
+                    middleware.preUpdate(updateOp).then(() => next()).catch(next);
                 });
             }
             if (middleware.postUpdate) {
-                schema = schema.post("update", (doc, next) => {
+                schema = schema.post("update", function (doc, next) {
                     if (!middleware.postUpdate)
                         throw `postUpdate middleware not found for ${collectionName}. this is likely a bug in mongooster`;
-                    middleware.postUpdate(doc).then(() => next()).catch(next);
+                    const updateOp = {};
+                    if (this._update.$set) {
+                        updateOp.$set = this._update.$set;
+                    }
+                    middleware.postUpdate(doc, updateOp).then(() => next()).catch(next);
                 });
             }
             if (middleware.preRemove) {

@@ -10,6 +10,16 @@ export * from "mongoose";
 export declare class Schema extends MongooseSchema {
     constructor(schema: SchemaDefinition);
 }
+/** UpdateOp is a simplified and type-safe form of the object passed as the second
+ *  paramter to a .update() operation.
+ *  It is derived from the value of `this` inside the middleware
+ *  function, but is abstracted by this library to be a bit easier to use.
+ */
+export interface UpdateOp {
+    $set?: {
+        [fieldPath: string]: any;
+    };
+}
 /** Middleware is a class which makes creating middleware a bit more typesafe,
  *  and allows you to provide functions that return a Promise instead of a
  *  callback.
@@ -17,15 +27,15 @@ export declare class Schema extends MongooseSchema {
 export declare class Middleware<T extends Document> {
     preInsert?: () => Promise<void>;
     postInsert?: (doc: T) => Promise<void>;
-    preUpdate?: () => Promise<void>;
-    postUpdate?: (doc: T) => Promise<void>;
+    preUpdate?: (op: UpdateOp) => Promise<void>;
+    postUpdate?: (doc: T, op: UpdateOp) => Promise<void>;
     preRemove?: () => Promise<void>;
     postRemove?: (doc: T) => Promise<void>;
     constructor(hooks: {
         preInsert?: () => Promise<void>;
         postInsert?: (doc: T) => Promise<void>;
-        preUpdate?: () => Promise<void>;
-        postUpdate?: (doc: T) => Promise<void>;
+        preUpdate?: (op: UpdateOp) => Promise<void>;
+        postUpdate?: (doc: T, op: UpdateOp) => Promise<void>;
         preRemove?: () => Promise<void>;
         postRemove?: (doc: T) => Promise<void>;
     });
