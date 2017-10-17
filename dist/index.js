@@ -62,7 +62,7 @@ class Collection {
                 });
             }
         }
-        this.model = mongoose_1.model(collectionName, schema);
+        this.model = mongoose_1.model(collectionName, schema, collectionName);
     }
     find(query) {
         return this.model.find(query).exec();
