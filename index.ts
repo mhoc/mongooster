@@ -46,34 +46,44 @@ export interface UpdateOp {
  */
 export class Middleware<T extends Document> {
   public preInsert?: () => Promise<void>;
-  public postInsert?: (doc: T) => Promise<void>;
-  public preUpdate?: (op: UpdateOp) => Promise<void>;
-  public postUpdate?: (doc: T, op: UpdateOp) => Promise<void>;
+  public postInsert?: () => Promise<void>;
+  public preUpdate?: (op: UpdateOp, doc?: T) => Promise<void>;
+  public postUpdate?: (op: UpdateOp, doc?: T) => Promise<void>;
   public preRemove?: () => Promise<void>;
-  public postRemove?: (doc: T) => Promise<void>;
+  public postRemove?: () => Promise<void>;
+  public shouldFetchDocument: boolean;
 
+  /**
+   * 
+   * @param hooks any hooks you'd like to provide as middleware handlers.
+   * @param fetchDocument if `true`, update middleware you provide will be 
+   *                      provided with the document being updated as an argument.
+   */
   constructor(hooks: {
     preInsert?: () => Promise<void>;
-    postInsert?: (doc: T) => Promise<void>;
-    preUpdate?: (op: UpdateOp) => Promise<void>;
-    postUpdate?: (doc: T, op: UpdateOp) => Promise<void>;
+    postInsert?: () => Promise<void>;
+    preUpdate?: (op: UpdateOp, doc?: T) => Promise<void>;
+    postUpdate?: (op: UpdateOp, doc?: T) => Promise<void>;
     preRemove?: () => Promise<void>;
-    postRemove?: (doc: T) => Promise<void>;
-  }) {
+    postRemove?: () => Promise<void>;
+  }, shouldFetchDocument?: boolean) {
     this.preInsert = hooks.preInsert;
     this.postInsert = hooks.postInsert;
     this.preUpdate = hooks.preUpdate;
     this.postUpdate = hooks.postUpdate;
     this.preRemove = hooks.preRemove;
     this.postRemove = hooks.postRemove;
+    this.shouldFetchDocument = shouldFetchDocument ? true : false;
   }
 
 }
 
 export class Collection<T extends Document> {
+  private middleware?: Middleware<T>;
   private model: Model<T>;
 
   constructor(collectionName: string, schema: Schema, middleware?: Middleware<T>) {
+    const self = this;
     if (middleware) {
       if (middleware.preInsert) {
         schema = schema.pre("save", (next: (err?: Error) => void) => {
@@ -84,7 +94,7 @@ export class Collection<T extends Document> {
       if (middleware.postInsert) {
         schema = schema.post("save", (doc: T, next: (err?: Error) => void) => {
           if (!middleware.postInsert) throw `postInsert middleware not found for ${collectionName}. this is likely a bug in mongooster`;
-          middleware.postInsert(doc).then(() => next()).catch(next);
+          middleware.postInsert().then(() => next()).catch(next);
         });
       }
       if (middleware.preUpdate) {
@@ -94,17 +104,39 @@ export class Collection<T extends Document> {
           if (this._update.$set) {
             updateOp.$set = this._update.$set;
           }
-          middleware.preUpdate(updateOp).then(() => next()).catch(next);
+          if (middleware.shouldFetchDocument && this._conditions._id) {
+            self.findById(this._conditions._id)
+              .then((doc) => {
+                return (middleware.preUpdate as Function)(updateOp, doc);
+              })
+              .then(() => next())
+              .catch((err) => {
+                return next(err);
+              })
+          } else {
+            middleware.preUpdate(updateOp, undefined).then(() => next()).catch(next);
+          }
         });
       }
       if (middleware.postUpdate) {
-        schema = schema.post("update", function(this: any, doc: T, next: (err?: Error) => void) {
+        schema = schema.post("update", function(this: any, commandResult: any, next: (err?: Error) => void) {
           if (!middleware.postUpdate) throw `postUpdate middleware not found for ${collectionName}. this is likely a bug in mongooster`;
           const updateOp: UpdateOp = {};
           if (this._update.$set) {
             updateOp.$set = this._update.$set;
           }
-          middleware.postUpdate(doc, updateOp).then(() => next()).catch(next);
+          if (middleware.shouldFetchDocument && this._conditions._id) {
+            self.findById(this._conditions._id)
+              .then((doc) => {
+                return (middleware.postUpdate as Function)(updateOp, doc);
+              })
+              .then(() => next())
+              .catch((err) => {
+                return next(err);
+              })
+          } else {
+            middleware.postUpdate(updateOp, undefined).then(() => next()).catch(next);
+          }
         });
       }
       if (middleware.preRemove) {
@@ -116,10 +148,11 @@ export class Collection<T extends Document> {
       if (middleware.postRemove) {
         schema = schema.post("remove", (doc: T, next: (err?: Error) => void) => {
           if (!middleware.postRemove) throw `postRemove middleware not found for ${collectionName}. this is likely a bug in mongooster`;
-          middleware.postRemove(doc).then(() => next()).catch(next);
+          middleware.postRemove().then(() => next()).catch(next);
         });
       }
     }
+    this.middleware = middleware;
     this.model = model<T>(collectionName, schema, collectionName);
   }
 

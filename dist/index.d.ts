@@ -26,21 +26,29 @@ export interface UpdateOp {
  */
 export declare class Middleware<T extends Document> {
     preInsert?: () => Promise<void>;
-    postInsert?: (doc: T) => Promise<void>;
-    preUpdate?: (op: UpdateOp) => Promise<void>;
-    postUpdate?: (doc: T, op: UpdateOp) => Promise<void>;
+    postInsert?: () => Promise<void>;
+    preUpdate?: (op: UpdateOp, doc?: T) => Promise<void>;
+    postUpdate?: (op: UpdateOp, doc?: T) => Promise<void>;
     preRemove?: () => Promise<void>;
-    postRemove?: (doc: T) => Promise<void>;
+    postRemove?: () => Promise<void>;
+    shouldFetchDocument: boolean;
+    /**
+     *
+     * @param hooks any hooks you'd like to provide as middleware handlers.
+     * @param fetchDocument if `true`, update middleware you provide will be
+     *                      provided with the document being updated as an argument.
+     */
     constructor(hooks: {
         preInsert?: () => Promise<void>;
-        postInsert?: (doc: T) => Promise<void>;
-        preUpdate?: (op: UpdateOp) => Promise<void>;
-        postUpdate?: (doc: T, op: UpdateOp) => Promise<void>;
+        postInsert?: () => Promise<void>;
+        preUpdate?: (op: UpdateOp, doc?: T) => Promise<void>;
+        postUpdate?: (op: UpdateOp, doc?: T) => Promise<void>;
         preRemove?: () => Promise<void>;
-        postRemove?: (doc: T) => Promise<void>;
-    });
+        postRemove?: () => Promise<void>;
+    }, shouldFetchDocument?: boolean);
 }
 export declare class Collection<T extends Document> {
+    private middleware?;
     private model;
     constructor(collectionName: string, schema: Schema, middleware?: Middleware<T>);
     find(query: any): Promise<T[]>;

@@ -27,18 +27,26 @@ exports.Schema = Schema;
  *  callback.
  */
 class Middleware {
-    constructor(hooks) {
+    /**
+     *
+     * @param hooks any hooks you'd like to provide as middleware handlers.
+     * @param fetchDocument if `true`, update middleware you provide will be
+     *                      provided with the document being updated as an argument.
+     */
+    constructor(hooks, shouldFetchDocument) {
         this.preInsert = hooks.preInsert;
         this.postInsert = hooks.postInsert;
         this.preUpdate = hooks.preUpdate;
         this.postUpdate = hooks.postUpdate;
         this.preRemove = hooks.preRemove;
         this.postRemove = hooks.postRemove;
+        this.shouldFetchDocument = shouldFetchDocument ? true : false;
     }
 }
 exports.Middleware = Middleware;
 class Collection {
     constructor(collectionName, schema, middleware) {
+        const self = this;
         if (middleware) {
             if (middleware.preInsert) {
                 schema = schema.pre("save", (next) => {
@@ -51,7 +59,7 @@ class Collection {
                 schema = schema.post("save", (doc, next) => {
                     if (!middleware.postInsert)
                         throw `postInsert middleware not found for ${collectionName}. this is likely a bug in mongooster`;
-                    middleware.postInsert(doc).then(() => next()).catch(next);
+                    middleware.postInsert().then(() => next()).catch(next);
                 });
             }
             if (middleware.preUpdate) {
@@ -62,18 +70,42 @@ class Collection {
                     if (this._update.$set) {
                         updateOp.$set = this._update.$set;
                     }
-                    middleware.preUpdate(updateOp).then(() => next()).catch(next);
+                    if (middleware.shouldFetchDocument && this._conditions._id) {
+                        self.findById(this._conditions._id)
+                            .then((doc) => {
+                            return middleware.preUpdate(updateOp, doc);
+                        })
+                            .then(() => next())
+                            .catch((err) => {
+                            return next(err);
+                        });
+                    }
+                    else {
+                        middleware.preUpdate(updateOp, undefined).then(() => next()).catch(next);
+                    }
                 });
             }
             if (middleware.postUpdate) {
-                schema = schema.post("update", function (doc, next) {
+                schema = schema.post("update", function (commandResult, next) {
                     if (!middleware.postUpdate)
                         throw `postUpdate middleware not found for ${collectionName}. this is likely a bug in mongooster`;
                     const updateOp = {};
                     if (this._update.$set) {
                         updateOp.$set = this._update.$set;
                     }
-                    middleware.postUpdate(doc, updateOp).then(() => next()).catch(next);
+                    if (middleware.shouldFetchDocument && this._conditions._id) {
+                        self.findById(this._conditions._id)
+                            .then((doc) => {
+                            return middleware.postUpdate(updateOp, doc);
+                        })
+                            .then(() => next())
+                            .catch((err) => {
+                            return next(err);
+                        });
+                    }
+                    else {
+                        middleware.postUpdate(updateOp, undefined).then(() => next()).catch(next);
+                    }
                 });
             }
             if (middleware.preRemove) {
@@ -87,10 +119,11 @@ class Collection {
                 schema = schema.post("remove", (doc, next) => {
                     if (!middleware.postRemove)
                         throw `postRemove middleware not found for ${collectionName}. this is likely a bug in mongooster`;
-                    middleware.postRemove(doc).then(() => next()).catch(next);
+                    middleware.postRemove().then(() => next()).catch(next);
                 });
             }
         }
+        this.middleware = middleware;
         this.model = mongoose_1.model(collectionName, schema, collectionName);
     }
     find(query) {
