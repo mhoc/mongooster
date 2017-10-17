@@ -76,7 +76,7 @@ export class Collection<T extends Document> {
         });
       }
     }
-    this.model = model<T>(collectionName, schema);
+    this.model = model<T>(collectionName, schema, collectionName);
   }
 
   public find(query: any): Promise<T[]> {
