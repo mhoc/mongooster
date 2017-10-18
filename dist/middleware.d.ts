@@ -50,8 +50,8 @@ export interface MiddlewareOptions<T> {
     postInsert?: InsertMiddlewareFunc<T>;
     preUpdate?: UpdateMiddlewareFunc<T>;
     postUpdate?: UpdateMiddlewareFunc<T>;
-    preRemove?: () => Promise<void>;
-    postRemove?: () => Promise<void>;
+    preRemove?: RemoveMiddlewareFunc<T>;
+    postRemove?: RemoveMiddlewareFunc<T>;
 }
 /** Middleware is a class which makes creating middleware a bit more typesafe,
  *  and allows you to provide functions that return a Promise instead of a
