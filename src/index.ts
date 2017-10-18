@@ -1,4 +1,7 @@
-export { Document } from "mongoose";
+export {
+  Document,
+} from "mongoose";
+
 export * from "./collection";
 export * from "./middleware";
 export * from "./schema";
