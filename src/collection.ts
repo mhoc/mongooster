@@ -1,18 +1,27 @@
 import {
   Document,
+  DocumentQuery,
   Model,
   model,
+  Query,
 } from "mongoose";
 
 import { Middleware, UpdateOp } from "./middleware";
 import { Schema } from "./schema";
+import { Virtual } from "./virtuals";
+
+export interface CollectionOpts<T extends Document> {
+  middleware?: Middleware<T>;
+  virtuals?: Virtual<T, any>[];
+}
 
 export class Collection<T extends Document> {
   private middleware?: Middleware<T>;
   private model: Model<T>;
 
-  constructor(collectionName: string, schema: Schema, middleware?: Middleware<T>) {
+  constructor(collectionName: string, schema: Schema, opts: CollectionOpts<T>) {
     const self = this;
+    const { middleware, virtuals } = opts;
     if (middleware) {
       if (middleware.preInsert) {
         schema = schema.pre("save", function(this: T, next: (err?: Error) => void) {
@@ -86,19 +95,24 @@ export class Collection<T extends Document> {
       }
     }
     this.middleware = middleware;
+    if (virtuals) {
+      virtuals.forEach((v) => {
+        schema.virtual(v.fieldName).get(v.getter);
+      });
+    }
     this.model = model<T>(collectionName, schema, collectionName);
   }
 
-  public find(query: any): Promise<T[]> {
-    return this.model.find(query).exec();
+  public find(query: any): DocumentQuery<T[], T> {
+    return this.model.find(query);
   }
 
-  public findOne(query: any): Promise<T | null> {
-    return this.model.findOne(query).exec();
+  public findOne(query: any): DocumentQuery<T | null, T> {
+    return this.model.findOne(query);
   }
 
-  public findById(id: string): Promise<T | null> {
-    return this.model.findById(id).exec();
+  public findById(id: string): DocumentQuery<T | null, T> {
+    return this.model.findById(id);
   }
 
   public insert(document: T): Promise<T> {

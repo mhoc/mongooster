@@ -2,8 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 class Collection {
-    constructor(collectionName, schema, middleware) {
+    constructor(collectionName, schema, opts) {
         const self = this;
+        const { middleware, virtuals } = opts;
         if (middleware) {
             if (middleware.preInsert) {
                 schema = schema.pre("save", function (next) {
@@ -85,16 +86,21 @@ class Collection {
             }
         }
         this.middleware = middleware;
+        if (virtuals) {
+            virtuals.forEach((v) => {
+                schema.virtual(v.fieldName).get(v.getter);
+            });
+        }
         this.model = mongoose_1.model(collectionName, schema, collectionName);
     }
     find(query) {
-        return this.model.find(query).exec();
+        return this.model.find(query);
     }
     findOne(query) {
-        return this.model.findOne(query).exec();
+        return this.model.findOne(query);
     }
     findById(id) {
-        return this.model.findById(id).exec();
+        return this.model.findById(id);
     }
     insert(document) {
         return new this.model(document).save();

@@ -1,14 +1,19 @@
 /// <reference types="mongoose" />
-import { Document } from "mongoose";
+import { Document, DocumentQuery } from "mongoose";
 import { Middleware } from "./middleware";
 import { Schema } from "./schema";
+import { Virtual } from "./virtuals";
+export interface CollectionOpts<T extends Document> {
+    middleware?: Middleware<T>;
+    virtuals?: Virtual<T, any>[];
+}
 export declare class Collection<T extends Document> {
     private middleware?;
     private model;
-    constructor(collectionName: string, schema: Schema, middleware?: Middleware<T>);
-    find(query: any): Promise<T[]>;
-    findOne(query: any): Promise<T | null>;
-    findById(id: string): Promise<T | null>;
+    constructor(collectionName: string, schema: Schema, opts: CollectionOpts<T>);
+    find(query: any): DocumentQuery<T[], T>;
+    findOne(query: any): DocumentQuery<T | null, T>;
+    findById(id: string): DocumentQuery<T | null, T>;
     insert(document: T): Promise<T>;
     /** This is a convenience method; if you already have an ODM instance of the
      *  object you want to update from .find(), you should just call .update() on that.
