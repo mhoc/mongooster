@@ -105,23 +105,52 @@ class Collection {
     insert(document) {
         return new this.model(document).save();
     }
+    /** This is a horribly unperformant operation which updates every object the
+     *  update requests in serial, one at a time. This is necessary in order to
+     *  ensure that middleware is correctly called on each object you are updating.
+     *
+     *  However, this is the correct method to use if you need to update multiple
+     *  documents, and the performance may be improved in a future release.
+     */
+    update(query, updateObj) {
+        return this.find(query)
+            .then((docs) => {
+            const promises = docs.map((doc) => {
+                return doc.update(updateObj).then(() => Promise.resolve(doc)).catch((e) => Promise.reject(e));
+            });
+            return Promise.all(promises);
+        });
+    }
+    /** This is a convenience method; if you already have an ODM instance of the
+     *  object you want to update from .find(), you should just call .update() on that.
+     *
+     *  Note that if the query you provide returns more than one object, only the first
+     *  returned from the query will be updated.
+     */
+    updateOne(query, updateObj) {
+        return this.findById(query)
+            .then((doc) => {
+            if (doc) {
+                return doc.update(updateObj).exec();
+            }
+            else {
+                return Promise.reject("document not found");
+            }
+        });
+    }
     /** This is a convenience method; if you already have an ODM instance of the
      *  object you want to update from .find(), you should just call .update() on that.
      *  Note that this will do one additional thing for you; reject an error if
      *  the object you're trying to update doesn't exist.
-     *
-     *  At this time, we do not support batch updates. This is because
-     *  mongoose doesn't fire validators or update hooks on batch updates; until we can
-     *  engineer a solution around that, that functionality is not exposed.
      */
     updateById(id, updateObj) {
         return this.findById(id)
             .then((doc) => {
-            if (!doc) {
-                return Promise.reject("document not found");
+            if (doc) {
+                return doc.update(updateObj).exec();
             }
             else {
-                return doc.update(updateObj).exec();
+                return Promise.reject("document not found");
             }
         });
     }
