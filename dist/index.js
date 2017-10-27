@@ -7,4 +7,5 @@ __export(require("./collection"));
 __export(require("./middleware"));
 __export(require("./schema"));
 __export(require("./schemaHelpers"));
+__export(require("./virtuals"));
 //# sourceMappingURL=index.js.map
