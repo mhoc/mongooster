@@ -1,4 +1,4 @@
-export { Document } from "mongoose";
+export { Document, DocumentQuery } from "mongoose";
 export * from "./collection";
 export * from "./middleware";
 export * from "./schema";

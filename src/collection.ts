@@ -169,6 +169,39 @@ export class Collection<T extends Document> {
       });
   }
 
+  /** This is a horribly unperformant operation which removes every object the 
+   *  remove op requests in serial, one at a time. This is necessary in order to 
+   *  ensure that middleware is correctly called on each object you are removing.
+   *  
+   *  However, this is the correct method to use if you need to update multiple
+   *  documents, and the performance may be improved in a future release.
+   */
+  public remove(query: object): Promise<void> {
+    return this.find(query)
+      .then((docs) => {
+        const promises = docs.map((doc) => {
+          return doc.remove().then(() => Promise.resolve()).catch((e) => Promise.reject(e));
+        });
+        return Promise.all(promises).then(() => Promise.resolve());
+      });
+  }
+
+  /** This is a convenience method; if you already have an ODM instance of the
+   *  object you want to remove, you should just call .remove() on that.
+   *  Note that this will do one additional thing for you; return an error
+   *  if the object you're trying to remove doesn't exist.
+   */
+  public removeOne(query: object): Promise<T> {
+    return this.findOne(query)
+      .then((doc) => {
+        if (doc) {
+          return doc.remove();
+        } else {
+          return Promise.reject("document not found");
+        }
+      });
+  }
+
   /** This is a convenience method; if you already have an ODM instance of the
    *  object you want to remove, you should just call .remove() on that.
    *  Note that this will do one additional thing for you; return an error

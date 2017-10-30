@@ -36,6 +36,20 @@ export declare class Collection<T extends Document> {
      *  the object you're trying to update doesn't exist.
      */
     updateById(id: string, updateObj: object): Promise<T>;
+    /** This is a horribly unperformant operation which removes every object the
+     *  remove op requests in serial, one at a time. This is necessary in order to
+     *  ensure that middleware is correctly called on each object you are removing.
+     *
+     *  However, this is the correct method to use if you need to update multiple
+     *  documents, and the performance may be improved in a future release.
+     */
+    remove(query: object): Promise<void>;
+    /** This is a convenience method; if you already have an ODM instance of the
+     *  object you want to remove, you should just call .remove() on that.
+     *  Note that this will do one additional thing for you; return an error
+     *  if the object you're trying to remove doesn't exist.
+     */
+    removeOne(query: object): Promise<T>;
     /** This is a convenience method; if you already have an ODM instance of the
      *  object you want to remove, you should just call .remove() on that.
      *  Note that this will do one additional thing for you; return an error

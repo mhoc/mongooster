@@ -1,5 +1,6 @@
 export {
   Document,
+  DocumentQuery,
 } from "mongoose";
 
 export * from "./collection";
