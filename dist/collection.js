@@ -102,6 +102,9 @@ class Collection {
     findById(id) {
         return this.model.findById(id);
     }
+    aggregate(aggregateSteps) {
+        return this.model.aggregate(...aggregateSteps);
+    }
     insert(document) {
         return new this.model(document).save();
     }

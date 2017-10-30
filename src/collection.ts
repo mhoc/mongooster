@@ -1,4 +1,5 @@
 import {
+  Aggregate,
   Document,
   DocumentQuery,
   Model,
@@ -113,6 +114,10 @@ export class Collection<T extends Document> {
 
   public findById(id: string): DocumentQuery<T | null, T> {
     return this.model.findById(id);
+  }
+
+  public aggregate(aggregateSteps: object[]): Aggregate<object[]> {
+    return this.model.aggregate(...aggregateSteps);
   }
 
   public insert(document: T): Promise<T> {
