@@ -45,6 +45,9 @@ export class Collection<T extends Document> {
           if (this._update.$set) {
             updateOp.$set = this._update.$set;
           }
+          if (this._update.$push) {
+            updateOp.$push = this._update.$push;
+          }
           if (middleware.fetchDoc && updateOp._id) {
             self.findById(updateOp._id)
               .then((doc) => {
@@ -67,6 +70,9 @@ export class Collection<T extends Document> {
           };
           if (this._update.$set) {
             updateOp.$set = this._update.$set;
+          }
+          if (this._update.$push) {
+            updateOp.$push = this._update.$push;
           }
           if (middleware.fetchDoc && updateOp._id) {
             self.findById(updateOp._id)

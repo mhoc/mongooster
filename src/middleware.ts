@@ -14,6 +14,10 @@ export interface UpdateOp {
   $set?: {
     [fieldPath: string]: any,
   };
+  /** $push operations */
+  $push?: {
+    [fieldPath: string]: any,
+  };
 };
 
 /**

@@ -12,6 +12,10 @@ export interface UpdateOp {
     $set?: {
         [fieldPath: string]: any;
     };
+    /** $push operations */
+    $push?: {
+        [fieldPath: string]: any;
+    };
 }
 /**
  * InsertMiddlewareFunc is the function signature that should be provided to
