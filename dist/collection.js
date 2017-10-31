@@ -102,8 +102,22 @@ class Collection {
     findById(id) {
         return this.model.findById(id);
     }
+    /**
+     * Perform a mongodb aggregate.
+     * This can't reliably return T[] because aggregations can modify the format
+     * the objects that are returned.
+     */
     aggregate(aggregateSteps) {
-        return this.model.aggregate(...aggregateSteps);
+        return new Promise((res, rej) => {
+            this.model.aggregate(...aggregateSteps, (err, result) => {
+                if (err) {
+                    return rej(err);
+                }
+                else {
+                    return res(result);
+                }
+            });
+        });
     }
     insert(document) {
         return new this.model(document).save();

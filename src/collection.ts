@@ -116,8 +116,21 @@ export class Collection<T extends Document> {
     return this.model.findById(id);
   }
 
-  public aggregate(aggregateSteps: object[]): Aggregate<object[]> {
-    return this.model.aggregate(...aggregateSteps);
+  /**
+   * Perform a mongodb aggregate.
+   * This can't reliably return T[] because aggregations can modify the format
+   * the objects that are returned.
+   */
+  public aggregate(aggregateSteps: object[]): Promise<object[]> {
+    return new Promise<object[]>((res, rej) => {
+      this.model.aggregate(...aggregateSteps, (err: Error, result: object[]) => {
+        if (err) {
+          return rej(err);
+        } else {
+          return res(result);
+        }
+      });
+    });
   }
 
   public insert(document: T): Promise<T> {

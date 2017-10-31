@@ -1,5 +1,5 @@
 /// <reference types="mongoose" />
-import { Aggregate, Document, DocumentQuery } from "mongoose";
+import { Document, DocumentQuery } from "mongoose";
 import { Middleware } from "./middleware";
 import { Schema } from "./schema";
 import { Virtual } from "./virtuals";
@@ -14,7 +14,12 @@ export declare class Collection<T extends Document> {
     find(query: any): DocumentQuery<T[], T>;
     findOne(query: any): DocumentQuery<T | null, T>;
     findById(id: string): DocumentQuery<T | null, T>;
-    aggregate(aggregateSteps: object[]): Aggregate<object[]>;
+    /**
+     * Perform a mongodb aggregate.
+     * This can't reliably return T[] because aggregations can modify the format
+     * the objects that are returned.
+     */
+    aggregate(aggregateSteps: object[]): Promise<object[]>;
     insert(document: T): Promise<T>;
     /** This is a horribly unperformant operation which updates every object the
      *  update requests in serial, one at a time. This is necessary in order to
