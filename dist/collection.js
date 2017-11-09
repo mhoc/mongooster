@@ -93,8 +93,12 @@ class Collection {
         }
         this.middleware = middleware;
         if (virtuals) {
-            virtuals.forEach((v) => {
-                schema.virtual(v.fieldName).get(v.getter);
+            Object.keys(virtuals.defs).forEach((virtualName) => {
+                const vBody = virtuals.defs[virtualName];
+                schema.virtual(virtualName).get(function () {
+                    const document = this;
+                    return vBody(document);
+                });
             });
         }
         this.model = mongoose_1.model(collectionName, schema, collectionName);
