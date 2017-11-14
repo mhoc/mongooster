@@ -9,19 +9,18 @@ import {
 
 import { Middleware, UpdateOp } from "./middleware";
 import { Schema } from "./schema";
-import { IVirtualDefs, Virtuals } from "./virtuals";
+import { Virtual } from "./virtuals";
 
-export interface CollectionOpts<T extends Document, V extends IVirtualDefs<T> = {}> {
+export interface CollectionOpts<T extends Document> {
   middleware?: Middleware<T>;
-  virtuals?: Virtuals<T, V>;
+  virtuals?: Virtual<T, any>[];
 }
 
-export class Collection<T extends Document, V extends IVirtualDefs<T> = {}> {
+export class Collection<T extends Document> {
   private middleware?: Middleware<T>;
   private model: Model<T>;
-  private virtuals?: Virtuals<T, V>;
 
-  constructor(collectionName: string, schema: Schema, opts: CollectionOpts<T, V>) {
+  constructor(collectionName: string, schema: Schema, opts: CollectionOpts<T>) {
     const self = this;
     const { middleware, virtuals } = opts;
     if (middleware) {
@@ -104,12 +103,8 @@ export class Collection<T extends Document, V extends IVirtualDefs<T> = {}> {
     }
     this.middleware = middleware;
     if (virtuals) {
-      Object.keys(virtuals.defs).forEach((virtualName) => {
-        const vBody = virtuals.defs[virtualName];
-        schema.virtual(virtualName).get(function(this: T) {
-          const document = this;
-          return vBody(document);
-        });
+      virtuals.forEach((v) => {
+        schema.virtual(v.fieldName).get(v.getter);
       });
     }
     this.model = model<T>(collectionName, schema, collectionName);

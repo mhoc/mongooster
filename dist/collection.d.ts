@@ -2,16 +2,15 @@
 import { Document, DocumentQuery } from "mongoose";
 import { Middleware } from "./middleware";
 import { Schema } from "./schema";
-import { IVirtualDefs, Virtuals } from "./virtuals";
-export interface CollectionOpts<T extends Document, V extends IVirtualDefs<T> = {}> {
+import { Virtual } from "./virtuals";
+export interface CollectionOpts<T extends Document> {
     middleware?: Middleware<T>;
-    virtuals?: Virtuals<T, V>;
+    virtuals?: Virtual<T, any>[];
 }
-export declare class Collection<T extends Document, V extends IVirtualDefs<T> = {}> {
+export declare class Collection<T extends Document> {
     private middleware?;
     private model;
-    private virtuals?;
-    constructor(collectionName: string, schema: Schema, opts: CollectionOpts<T, V>);
+    constructor(collectionName: string, schema: Schema, opts: CollectionOpts<T>);
     find(query: any): DocumentQuery<T[], T>;
     findOne(query: any): DocumentQuery<T | null, T>;
     findById(id: string): DocumentQuery<T | null, T>;
