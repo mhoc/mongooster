@@ -7,6 +7,7 @@ import {
   Query,
 } from "mongoose";
 
+import { id } from "./id";
 import { Middleware, UpdateOp } from "./middleware";
 import { Schema } from "./schema";
 import { Virtual } from "./virtuals";
@@ -139,7 +140,11 @@ export class Collection<T extends Document> {
     });
   }
 
-  public insert(document: T): Promise<T> {
+  /**
+   * Insert a new document into the database.
+   */
+  public insert(document: any): Promise<T> {
+    document._id = id();
     return new this.model(document).save();
   }
 

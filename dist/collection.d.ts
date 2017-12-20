@@ -20,7 +20,10 @@ export declare class Collection<T extends Document> {
      * the objects that are returned.
      */
     aggregate(aggregateSteps: object[]): Promise<object[]>;
-    insert(document: T): Promise<T>;
+    /**
+     * Insert a new document into the database.
+     */
+    insert(document: any): Promise<T>;
     /** This is a horribly unperformant operation which updates every object the
      *  update requests in serial, one at a time. This is necessary in order to
      *  ensure that middleware is correctly called on each object you are updating.

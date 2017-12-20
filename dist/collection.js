@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
+const id_1 = require("./id");
 class Collection {
     constructor(collectionName, schema, opts) {
         const self = this;
@@ -125,7 +126,11 @@ class Collection {
             });
         });
     }
+    /**
+     * Insert a new document into the database.
+     */
     insert(document) {
+        document._id = id_1.id();
         return new this.model(document).save();
     }
     /** This is a horribly unperformant operation which updates every object the
