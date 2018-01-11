@@ -100,14 +100,14 @@ class Collection {
         }
         this.model = mongoose_1.model(collectionName, schema, collectionName);
     }
-    find(query) {
-        return this.model.find(query);
+    find(query, projection) {
+        return this.model.find(query, projection);
     }
-    findOne(query) {
-        return this.model.findOne(query);
+    findOne(query, projection) {
+        return this.model.findOne(query, projection);
     }
-    findById(id) {
-        return this.model.findById(id);
+    findById(id, projection) {
+        return this.model.findById(id, projection);
     }
     /**
      * Perform a mongodb aggregate.

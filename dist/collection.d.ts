@@ -11,9 +11,9 @@ export declare class Collection<T extends Document> {
     private middleware?;
     private model;
     constructor(collectionName: string, schema: Schema, opts: CollectionOpts<T>);
-    find(query: any): DocumentQuery<T[], T>;
-    findOne(query: any): DocumentQuery<T | null, T>;
-    findById(id: string): DocumentQuery<T | null, T>;
+    find(query: any, projection?: any): DocumentQuery<T[], T>;
+    findOne(query: any, projection?: any): DocumentQuery<T | null, T>;
+    findById(id: string, projection?: any): DocumentQuery<T | null, T>;
     /**
      * Perform a mongodb aggregate.
      * This can't reliably return T[] because aggregations can modify the format

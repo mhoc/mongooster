@@ -83,7 +83,7 @@ export class Collection<T extends Document> {
               .then(() => next())
               .catch((err) => {
                 return next(err);
-              })
+              });
           } else {
             middleware.postUpdate(updateOp, undefined).then(() => next()).catch(next);
           }
@@ -111,16 +111,16 @@ export class Collection<T extends Document> {
     this.model = model<T>(collectionName, schema, collectionName);
   }
 
-  public find(query: any): DocumentQuery<T[], T> {
-    return this.model.find(query);
+  public find(query: any, projection?: any): DocumentQuery<T[], T> {
+    return this.model.find(query, projection);
   }
 
-  public findOne(query: any): DocumentQuery<T | null, T> {
-    return this.model.findOne(query);
+  public findOne(query: any, projection?: any): DocumentQuery<T | null, T> {
+    return this.model.findOne(query, projection);
   }
 
-  public findById(id: string): DocumentQuery<T | null, T> {
-    return this.model.findById(id);
+  public findById(id: string, projection?: any): DocumentQuery<T | null, T> {
+    return this.model.findById(id, projection);
   }
 
   /**
