@@ -1,10 +1,9 @@
 import {
-  Aggregate,
+  Connection,
+  connection,
   Document,
   DocumentQuery,
   Model,
-  model,
-  Query,
 } from "mongoose";
 
 import { id } from "./id";
@@ -13,17 +12,19 @@ import { Schema } from "./schema";
 import { Virtual } from "./virtuals";
 
 export interface CollectionOpts<T extends Document> {
+  existingConnection?: Connection;
   middleware?: Middleware<T>;
   virtuals?: Virtual<T, any>[];
 }
 
 export class Collection<T extends Document> {
+  private connection: Connection;
   private middleware?: Middleware<T>;
   private model: Model<T>;
 
   constructor(collectionName: string, schema: Schema, opts: CollectionOpts<T>) {
     const self = this;
-    const { middleware, virtuals } = opts;
+    const { existingConnection, middleware, virtuals } = opts;
     if (middleware) {
       if (middleware.preInsert) {
         schema = schema.pre("save", function(this: T, next: (err?: Error) => void) {
@@ -108,7 +109,12 @@ export class Collection<T extends Document> {
         schema.virtual(v.fieldName).get(v.getter);
       });
     }
-    this.model = model<T>(collectionName, schema, collectionName);
+    if (existingConnection) {
+      this.connection = existingConnection;
+    } else {
+      this.connection = connection;
+    }
+    this.model = this.connection.model<T>(collectionName, schema, collectionName);
   }
 
   public find(query: any, projection?: any): DocumentQuery<T[], T> {
