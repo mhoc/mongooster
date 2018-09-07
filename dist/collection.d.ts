@@ -1,13 +1,15 @@
 /// <reference types="mongoose" />
-import { Document, DocumentQuery } from "mongoose";
+import { Connection, Document, DocumentQuery } from "mongoose";
 import { Middleware } from "./middleware";
 import { Schema } from "./schema";
 import { Virtual } from "./virtuals";
 export interface CollectionOpts<T extends Document> {
+    existingConnection?: Connection;
     middleware?: Middleware<T>;
     virtuals?: Virtual<T, any>[];
 }
 export declare class Collection<T extends Document> {
+    private connection;
     private middleware?;
     private model;
     constructor(collectionName: string, schema: Schema, opts: CollectionOpts<T>);

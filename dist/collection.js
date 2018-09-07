@@ -5,7 +5,7 @@ const id_1 = require("./id");
 class Collection {
     constructor(collectionName, schema, opts) {
         const self = this;
-        const { middleware, virtuals } = opts;
+        const { existingConnection, middleware, virtuals } = opts;
         if (middleware) {
             if (middleware.preInsert) {
                 schema = schema.pre("save", function (next) {
@@ -98,7 +98,13 @@ class Collection {
                 schema.virtual(v.fieldName).get(v.getter);
             });
         }
-        this.model = mongoose_1.model(collectionName, schema, collectionName);
+        if (existingConnection) {
+            this.connection = existingConnection;
+        }
+        else {
+            this.connection = mongoose_1.connection;
+        }
+        this.model = this.connection.model(collectionName, schema, collectionName);
     }
     find(query, projection) {
         return this.model.find(query, projection);
