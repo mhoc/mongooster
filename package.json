@@ -3,11 +3,14 @@
   "version": "5.1.2",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "repository": {
+    "url": "https://github.com/mhoc/mongooster"
+  },
   "dependencies": {
-    "mongoose": "^4.12.1"
+    "mongoose": "^5.3.4"
   },
   "devDependencies": {
-    "@types/mongoose": "^4.7.23",
+    "@types/mongoose": "^5.2.19",
     "tslint": "^5.7.0",
     "typescript": "^2.5.3"
   }
