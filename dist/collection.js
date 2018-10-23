@@ -122,7 +122,7 @@ class Collection {
      */
     aggregate(aggregateSteps) {
         return new Promise((res, rej) => {
-            this.model.aggregate(...aggregateSteps, (err, result) => {
+            this.model.aggregate(aggregateSteps, (err, result) => {
                 if (err) {
                     return rej(err);
                 }

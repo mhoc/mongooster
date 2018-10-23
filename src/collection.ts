@@ -136,7 +136,7 @@ export class Collection<T extends Document> {
    */
   public aggregate(aggregateSteps: object[]): Promise<object[]> {
     return new Promise<object[]>((res, rej) => {
-      this.model.aggregate(...aggregateSteps, (err: Error, result: object[]) => {
+      this.model.aggregate(aggregateSteps, (err: Error, result: object[]) => {
         if (err) {
           return rej(err);
         } else {
